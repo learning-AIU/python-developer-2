@@ -22,24 +22,33 @@ MESSAGES = {
 }
 QUIT_KW = ("я хочу выйти", "выйти", "выход", )
 
-scores = 0
+answers = {
+    'total': 0,
+    'correct': 0,
+    'wrong': 0,
+}
 
 
 def get_letter(word, mask):
-    global scores
     if not mask:
         return '*' * len(word)
     while True:
         i = randrange(len(word))
         if mask[i] == '*':
             mask = mask[:i] + word[i] + mask[i+1:]
-            scores -= 1
             break
     return mask
 
 
-def show_score():
-    print(f"Ваш общий счёт: {scores}\n")
+def show_stats():
+    """Выводит в stdout статистику результатов игры.
+
+    Процент правильных ответов считается от количества вопросов. Процент неправильных ответов считается от всех ответов.
+    """
+    print(f"Количество правильных ответов: {answers['correct']}\n"
+          f"Процент отвеченных вопросов: {answers['correct']*100/len(QA):.0f}%\n"
+          f"Количество неправильных ответов: {answers['wrong']}\n"
+          f"Процент неправильных ответов: {answers['wrong']*100/answers['total']:.0f}%")
 
 
 print('='*30, 'ВИКТОРИНА', '='*30)
@@ -57,24 +66,23 @@ for question in question_list:
         mask = get_letter(QA[question], mask)
         prompt = f"{let_in_ans} букв: {mask}\nваш ответ: "
         answer = input(prompt)
+        answers['total'] += 1
         if answer == QA[question]:
             print(MESSAGES['CORRECT'])
-            scores += let_in_ans
-            show_score()
+            answers['correct'] += 1
             break
         elif answer.lower().strip() in QUIT_KW:
             print(MESSAGES['QUIT'])
             quit = True
             break
         else:
+            answers['wrong'] += 1
             if mask.count('*') > 1:
                 print(MESSAGES['INCORRECT'])
             else:
                 print(f"Правильный ответ: {QA[question]}\n")
-                scores -= 1
-                show_score()
                 break
     if quit:
         break
 
-show_score()
+show_stats()
